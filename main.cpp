@@ -8,24 +8,45 @@ int is_directory(const char *path) {
     return S_ISDIR(path_stat.st_mode);
 }
 
+
+bool create_folder(const char * path)
+{
+    int result = mkdir(path, S_IRWXU);
+
+    if (result == 0) {
+        printf("Directory  %s created successfully.\n", path);
+    } else {
+        printf("Directory  %s created Unsuccessful.\n", path);
+        return false;
+    }
+    return true;
+}
+
 int main()
 {
-    struct dirent **namelist;
-    int n;
 
-    printf("Current directory:\n");
+    create_folder("GTA5")
+    // struct dirent **namelist;
+    // int n;
 
-    n = scandir(".", &namelist, NULL, alphasort);
-    if (n < 0) {
-        perror("scandir");
-        return 1;
-    }
+    // printf("Current directory:\n");
+    
+    create_folder("GTA5");
 
-    for (int i = 0; i < n; i++) {
-        if (is_directory(namelist[i]->d_name)) {
-            printf("%s\n", namelist[i]->d_name);
-        }
-    }
+
+
+
+    // n = scandir(".", &namelist, NULL, alphasort);
+    // if (n < 0) {
+    //     perror("scandir");
+    //     return 1;
+    // }
+
+    // for (int i = 0; i < n; i++) {
+    //     if (is_directory(namelist[i]->d_name)) {
+    //         printf("%s\n", namelist[i]->d_name);
+    //     }
+    // }
 
     return 0;
 }
