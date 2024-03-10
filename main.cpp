@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
+#include<malloc.h>
 
 int is_directory(const char *path) {
     struct stat path_stat;
@@ -70,6 +71,50 @@ bool write_to_file(const char *path, const char *text) {
     return true;
 }
 
+bool write_random(const char *path, int count_bytes)
+{
+    printf("Opening /dev/urandom...\n");
+    int result = open("/dev/urandom", O_RDONLY);
+    if (result < 0) {
+        perror("Open file");
+        return false;
+    }
+    
+    printf("Opened /dev/urandom\n");
+    printf("Reading bytes of urandom...\n");
+    char *text = (char *)malloc(count_bytes);
+    ssize_t bytes_read = read(result, text, count_bytes);
+    if (bytes_read == -1) {
+        perror("Failed to read file");
+        close(result);
+        return false;
+    }
+    
+    printf("Writing in file %s ...\n", path);
+    
+    int output_file = open(path, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+    if (output_file < 0) {
+        perror("Open output file");
+        close(result);
+        free(text);
+        return false;
+    }
+    
+    ssize_t bytes_written = write(output_file, text, bytes_read);
+    if (bytes_written == -1) {
+        perror("Failed to write to file");
+        close(result);
+        close(output_file);
+        free(text);
+        return false;
+    }
+
+    close(result);
+    close(output_file);
+    free(text);
+    printf("Wrote random in file %s ...\n", path);
+    return true;
+}
 
 bool symbol_link(const char *target, const char *linkpath){
 
@@ -105,15 +150,15 @@ int main()
     
     write_to_file("Trevor/quote.txt","Listen: nobody likes you!");
     write_to_file("Trevor/zero.txt", "00");
-    write_to_file("Trevor/random.txt","asd");
+    write_random("Trevor/random.txt",100);
     
     write_to_file("Micle/quote.txt","Каждый день ты забываешь тысячу мелочей. Пусть это будет одна из них.");
     write_to_file("Micle/zero.txt", "00");
-    write_to_file("Micle/random.txt","asd");
+    write_random("Micle/random.txt",100);
     
     write_to_file("Franklin/quote.txt","My car is dear, moron!");
     write_to_file("Franklin/zero.txt", "00");
-    write_to_file("Franklin/random.txt","My car is dear, moron!");
+    write_random("Franklin/random.txt",100);
     open_directory("..");
     create_folder("Venichles/Franklin");
     create_folder("Venichles/Trevor");
